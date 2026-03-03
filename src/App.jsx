@@ -31,7 +31,7 @@ Each object must have:
 - platform: string (e.g. "Platform 3" or "TBC")
 - operator: string (the real UK train operator for that route, e.g. "Avanti West Coast", "LNER", "Great Western Railway", "Southern", etc.)
 - status: string - mostly "On time", occasionally "Delayed 5 mins" or "Delayed 10 mins"
-- callingPoints: string (comma-separated list of intermediate stops, or "Direct" if no stops)
+- callingPoints: array of objects with { station: string, arrival: string (HH:MM) }, or empty array if direct
 - stops: string (e.g. "Direct", "2 stops", "3 stops")
 
 Generate 4 realistic trains spaced roughly 20-60 mins apart based on typical UK rail frequencies for that route.
@@ -163,7 +163,7 @@ function TrainCard({ train, index, showCallingPoints = false }) {
         </div>
         <StatusBadge status={train.status} />
       </div>
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: showCallingPoints && train.callingPoints && train.callingPoints !== "Direct" ? "10px" : "0" }}>
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: showCallingPoints && Array.isArray(train.callingPoints) && train.callingPoints.length > 0 ? "10px" : "0" }}>
         {[
           { icon: "⏱", label: train.duration },
           { icon: "🚉", label: train.platform },
@@ -175,7 +175,7 @@ function TrainCard({ train, index, showCallingPoints = false }) {
           </span>
         ))}
       </div>
-      {showCallingPoints && train.callingPoints && train.callingPoints !== "Direct" && (
+      {showCallingPoints && Array.isArray(train.callingPoints) && train.callingPoints.length > 0 && (
         <div>
           <button onClick={() => setExpanded(e => !e)}
             style={{ background: "none", border: "none", color: "rgba(201,160,100,0.6)", fontSize: "0.75rem", cursor: "pointer", padding: "0", letterSpacing: "0.05em" }}>
@@ -183,10 +183,15 @@ function TrainCard({ train, index, showCallingPoints = false }) {
           </button>
           {expanded && (
             <div style={{ marginTop: "8px", fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.8 }}>
-              {train.callingPoints.split(",").map(s => s.trim()).map((stop, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "rgba(201,160,100,0.4)", display: "inline-block", flexShrink: 0 }}></span>
-                  {stop}
+              {(Array.isArray(train.callingPoints) ? train.callingPoints : []).map((stop, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", paddingRight: "4px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "rgba(201,160,100,0.4)", display: "inline-block", flexShrink: 0 }}></span>
+                    {typeof stop === "object" ? stop.station : stop}
+                  </div>
+                  {typeof stop === "object" && stop.arrival && (
+                    <span style={{ color: "rgba(201,160,100,0.7)", fontWeight: 600, fontSize: "0.78rem", flexShrink: 0 }}>{stop.arrival}</span>
+                  )}
                 </div>
               ))}
             </div>
