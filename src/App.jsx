@@ -563,6 +563,71 @@ function WeatherPanel({ ukSearchStations }) {
   );
 }
 
+
+// ── Traffic Panel ────────────────────────────────────────────────────────────
+
+const QUICK_LINKS = [
+  { label: "Blackwall Tunnel", icon: "🚇", desc: "TfL live tunnel status", url: "https://tfl.gov.uk/traffic/status/", color: "rgba(0,188,212" },
+  { label: "Silvertown Tunnel", icon: "🚇", desc: "TfL live tunnel status", url: "https://tfl.gov.uk/traffic/status/", color: "rgba(0,188,212" },
+  { label: "A2 / A102 Traffic", icon: "🛣", desc: "National Highways live map", url: "https://one.network/?gb=true&tm=true&type=area&bbox=-0.15,51.40,0.40,51.55", color: "rgba(255,152,0" },
+  { label: "National Highways South East", icon: "🗺", desc: "Live incidents & roadworks", url: "https://nationalhighways.co.uk/travel-updates/south-east/", color: "rgba(255,152,0" },
+  { label: "Google Maps Traffic", icon: "📍", desc: "Live traffic layer", url: "https://www.google.com/maps/@51.4877,-0.0174,12z/data=!5m1!1e1", color: "rgba(66,133,244" },
+];
+
+const MAP_EMBED_URL = "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d24000!2d0.05!3d51.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2suk!4v1&layer=t";
+
+function TrafficPanel() {
+  const [mapLoaded, setMapLoaded] = useState(false);
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg, rgba(255,152,0,0.12), rgba(255,152,0,0.04))", border: "1px solid rgba(255,152,0,0.2)", borderRadius: "12px", padding: "14px 18px", marginBottom: "20px" }}>
+        <div style={{ fontSize: "0.7rem", color: "rgba(255,152,0,0.7)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "4px" }}>Live Traffic</div>
+        <div style={{ fontSize: "0.9rem", color: "#f0e6d3", fontWeight: 600 }}>Blackwall · Silvertown · A2 Corridor</div>
+        <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)", marginTop: "4px" }}>Ebbsfleet ↔ Central London</div>
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Live Traffic Map</div>
+        <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", position: "relative", background: "#1a1a1f" }}>
+          {!mapLoaded && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.3)", fontSize: "0.85rem", zIndex: 1, height: "320px" }}>
+              <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: "8px" }}>⟳</span> Loading map…
+            </div>
+          )}
+          <iframe
+            src={MAP_EMBED_URL}
+            width="100%" height="320"
+            style={{ border: 0, display: "block", filter: "invert(0.9) hue-rotate(180deg) saturate(0.8)" }}
+            allowFullScreen="" loading="lazy"
+            onLoad={() => setMapLoaded(true)}
+            title="Live traffic map"
+          />
+        </div>
+        <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.2)", marginTop: "6px", textAlign: "center" }}>
+          Traffic layer active · Blackwall / Silvertown / A2 corridor
+        </div>
+      </div>
+      <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Official Status Pages</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {QUICK_LINKS.map(link => (
+          <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer"
+            style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", background: link.color + ",0.06)", border: "1px solid " + link.color + ",0.2)", borderRadius: "10px", padding: "12px 16px" }}
+            onMouseEnter={e => e.currentTarget.style.background = link.color + ",0.14)"}
+            onMouseLeave={e => e.currentTarget.style.background = link.color + ",0.06)"}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "1.3rem" }}>{link.icon}</span>
+              <div>
+                <div style={{ fontSize: "0.88rem", color: "#f0e6d3", fontWeight: 600 }}>{link.label}</div>
+                <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", marginTop: "1px" }}>{link.desc}</div>
+              </div>
+            </div>
+            <span style={{ color: link.color + ",0.6)", fontSize: "1rem" }}>↗</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -574,6 +639,7 @@ export default function App() {
     { id: "inbound", short: "Inbound" },
     { id: "search", short: "🔍 Search" },
     { id: "weather", short: "🌤 Weather" },
+    { id: "traffic", short: "🚦 Traffic" },
   ];
 
   return (
@@ -594,7 +660,7 @@ export default function App() {
             <span style={{ fontSize: "1.4rem" }}>🚄</span>
             <div>
               <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#f0e6d3", fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}>UK Trains</div>
-              <div style={{ fontSize: "0.68rem", color: "rgba(201,160,100,0.6)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Rail & Weather</div>
+              <div style={{ fontSize: "0.68rem", color: "rgba(201,160,100,0.6)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Rail · Weather · Traffic</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: "2px" }}>
@@ -613,6 +679,7 @@ export default function App() {
         {activeTab === "inbound" && <HS1TabPanel key="inbound" direction="inbound" />}
         {activeTab === "search" && <UKSearchPanel onStationsChange={(from, to) => setUkSearchStations({ from, to })} />}
         {activeTab === "weather" && <WeatherPanel ukSearchStations={ukSearchStations} />}
+        {activeTab === "traffic" && <TrafficPanel key="traffic" />}
       </div>
     </div>
   );
