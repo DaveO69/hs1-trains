@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API_URL = "https://api.anthropic.com/v1/messages";
+const API_URL = "/api/proxy";
 
 const STATIONS = {
   outbound: { from: "Ebbsfleet International", to: "St Pancras International" },
