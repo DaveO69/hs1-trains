@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import TVGuide from "./TVGuide";
+import TeslaTab from "./TeslaTab";
 
 const API_URL = "/api/proxy";
 
@@ -731,7 +731,7 @@ export default function App() {
     { id: "search", short: "🔍 Search" },
     { id: "weather", short: "🌤 Weather" },
     { id: "traffic", short: "🚦 Traffic" },
-    { id: "tv", short: "📺 TV" },
+    { id: "tesla", short: "🚗 Tesla" },
   ];
 
   return (
@@ -772,7 +772,7 @@ export default function App() {
         {activeTab === "search" && <UKSearchPanel onStationsChange={(from, to) => setUkSearchStations({ from, to })} />}
         {activeTab === "weather" && <WeatherPanel ukSearchStations={ukSearchStations} />}
         {activeTab === "traffic" && <TrafficPanel key="traffic" />}
-        {activeTab === "tv" && <TVGuide key="tv" />}
+        {activeTab === "tesla" && <TeslaTab key="tesla" />}
       </div>
     </div>
   );
