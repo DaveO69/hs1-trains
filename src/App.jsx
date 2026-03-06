@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import TVGuide from "./TVGuide";
 
 const API_URL = "/api/proxy";
 
@@ -640,6 +641,7 @@ export default function App() {
     { id: "search", short: "🔍 Search" },
     { id: "weather", short: "🌤 Weather" },
     { id: "traffic", short: "🚦 Traffic" },
+    { id: "tv", short: "📺 TV" },
   ];
 
   return (
@@ -660,7 +662,7 @@ export default function App() {
             <span style={{ fontSize: "1.4rem" }}>🚄</span>
             <div>
               <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#f0e6d3", fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}>UK Trains</div>
-              <div style={{ fontSize: "0.68rem", color: "rgba(201,160,100,0.6)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Rail · Weather · Traffic</div>
+              <div style={{ fontSize: "0.68rem", color: "rgba(201,160,100,0.6)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Rail · Weather · TV</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: "2px" }}>
@@ -680,6 +682,7 @@ export default function App() {
         {activeTab === "search" && <UKSearchPanel onStationsChange={(from, to) => setUkSearchStations({ from, to })} />}
         {activeTab === "weather" && <WeatherPanel ukSearchStations={ukSearchStations} />}
         {activeTab === "traffic" && <TrafficPanel key="traffic" />}
+        {activeTab === "tv" && <TVGuide key="tv" />}
       </div>
     </div>
   );
