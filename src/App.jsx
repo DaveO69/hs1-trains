@@ -6,6 +6,8 @@ const API_URL = "/api/proxy";
 const STATIONS = {
   outbound: { from: "Ebbsfleet International", to: "St Pancras International" },
   inbound: { from: "St Pancras International", to: "Ebbsfleet International" },
+  longVicOut: { from: "Longfield", to: "London Victoria" },
+  longVicIn: { from: "London Victoria", to: "Longfield" },
 };
 
 // Fixed coords for HS1 stations
@@ -13,6 +15,26 @@ const STATION_COORDS = {
   "Ebbsfleet International": { lat: 51.4429, lon: 0.3198 },
   "St Pancras International": { lat: 51.5322, lon: -0.1234 },
 };
+
+
+const STOPPING_SYSTEM_PROMPT = `You are a UK train timetable assistant for Southeastern trains.
+When asked for train times, respond ONLY with a JSON array (no markdown, no explanation) of train objects.
+Each object must have:
+- departure: string (HH:MM format)
+- arrival: string (HH:MM format)
+- duration: string (e.g. "51 mins")
+- platform: string (e.g. "Platform 1" or "TBC")
+- operator: string (always "Southeastern")
+- status: string - mostly "On time", occasionally "Delayed 5 mins"
+- trainType: string (always "Southeastern")
+- callingPoints: array of objects with { station: string, arrival: string (HH:MM) }
+- stops: string (e.g. "5 stops")
+
+Longfield to London Victoria via Swanley, Bromley South, Herne Hill typically takes ~51 mins.
+London Victoria to Longfield via Herne Hill, Bromley South, Swanley typically takes ~51 mins.
+Key intermediate stops: Fawkham (outbound only before Longfield), Swanley, St Mary Cray, Bromley South, Herne Hill.
+Generate realistic times spaced roughly 30 mins apart. If a specific date/time is given, start trains from that time.
+Always include realistic calling points with estimated arrival times.`;
 
 const HS1_SYSTEM_PROMPT = `You are a UK train timetable assistant for Southeastern High Speed trains.
 When asked for train times, respond ONLY with a JSON array (no markdown, no explanation) of train objects.
@@ -377,7 +399,7 @@ function WeatherCard({ stationName, coords, accentColor = "rgba(201,160,100" }) 
 
 // ── Tab panels ───────────────────────────────────────────────────────────────
 
-function HS1TabPanel({ direction }) {
+function HS1TabPanel({ direction, systemPrompt, showCallingPoints = false }) {
   const { from, to } = STATIONS[direction];
   const [trains, setTrains] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -400,7 +422,7 @@ function HS1TabPanel({ direction }) {
   const load = async (dt) => {
     setLoading(true); setError(null);
     try {
-      const result = await callAPI(HS1_SYSTEM_PROMPT, buildPrompt(dt));
+      const result = await callAPI(systemPrompt || HS1_SYSTEM_PROMPT, buildPrompt(dt));
       setTrains(Array.isArray(result) ? result : []); setLastFetched(new Date()); setRetryCount(0);
     } catch (e) { setError(e.message); setRetryCount(c => c + 1); }
     finally { setLoading(false); }
@@ -439,12 +461,38 @@ function HS1TabPanel({ direction }) {
             <span>{mode === "search" ? "Search results" : "Next departures"}</span>
             {lastFetched && <span>Updated {lastFetched.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>}
           </div>
-          {trains.map((train, i) => <TrainCard key={i} train={train} index={i} />)}
+          {trains.map((train, i) => <TrainCard key={i} train={train} index={i} showCallingPoints={showCallingPoints} />)}
         </div>
       )}
       {trains.length === 0 && !loading && !error && (
         <div style={{ textAlign: "center", color: "rgba(255,255,255,0.2)", padding: "40px 20px", fontSize: "0.9rem" }}>Press the button above to load train times</div>
       )}
+    </div>
+  );
+}
+
+function LongVicPanel() {
+  return (
+    <div>
+      {/* Outbound */}
+      <div style={{ marginBottom: "28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+          <div style={{ flex: 1, height: "1px", background: "rgba(76,175,80,0.15)" }} />
+          <span style={{ fontSize: "0.68rem", color: "rgba(76,175,80,0.5)", letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Longfield → Victoria</span>
+          <div style={{ flex: 1, height: "1px", background: "rgba(76,175,80,0.15)" }} />
+        </div>
+        <HS1TabPanel direction="longVicOut" systemPrompt={STOPPING_SYSTEM_PROMPT} showCallingPoints={true} />
+      </div>
+
+      {/* Divider */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+        <div style={{ flex: 1, height: "1px", background: "rgba(233,30,99,0.15)" }} />
+        <span style={{ fontSize: "0.68rem", color: "rgba(233,30,99,0.5)", letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Victoria → Longfield</span>
+        <div style={{ flex: 1, height: "1px", background: "rgba(233,30,99,0.15)" }} />
+      </div>
+
+      {/* Inbound */}
+      <HS1TabPanel direction="longVicIn" systemPrompt={STOPPING_SYSTEM_PROMPT} showCallingPoints={true} />
     </div>
   );
 }
@@ -663,6 +711,7 @@ export default function App() {
 
   const tabs = [
     { id: "ebbsstp", short: "Ebbs/StP" },
+    { id: "longvic", short: "Long/Vic" },
     { id: "search", short: "🔍 Search" },
     { id: "weather", short: "🌤 Weather" },
     { id: "traffic", short: "🚦 Traffic" },
@@ -703,6 +752,7 @@ export default function App() {
 
       <div style={{ maxWidth: "480px", margin: "0 auto", padding: "24px 16px 40px" }}>
         {activeTab === "ebbsstp" && <EbbsStPPanel key="ebbsstp" />}
+        {activeTab === "longvic" && <LongVicPanel key="longvic" />}
         {activeTab === "search" && <UKSearchPanel onStationsChange={(from, to) => setUkSearchStations({ from, to })} />}
         {activeTab === "weather" && <WeatherPanel ukSearchStations={ukSearchStations} />}
         {activeTab === "traffic" && <TrafficPanel key="traffic" />}
