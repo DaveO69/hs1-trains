@@ -17,24 +17,40 @@ const STATION_COORDS = {
 };
 
 
-const STOPPING_SYSTEM_PROMPT = `You are a UK train timetable assistant for Southeastern trains.
+const STOPPING_SYSTEM_PROMPT = `You are a UK train timetable assistant with knowledge of Southeastern services between Longfield and London Victoria.
 When asked for train times, respond ONLY with a JSON array (no markdown, no explanation) of train objects.
 Each object must have:
 - departure: string (HH:MM format)
 - arrival: string (HH:MM format)
-- duration: string (e.g. "51 mins")
+- duration: string (e.g. "31 mins")
 - platform: string (e.g. "Platform 1" or "TBC")
 - operator: string (always "Southeastern")
 - status: string - mostly "On time", occasionally "Delayed 5 mins"
-- trainType: string (always "Southeastern")
+- trainType: string (e.g. "Express", "Semi-Fast", "Stopping")
 - callingPoints: array of objects with { station: string, arrival: string (HH:MM) }
-- stops: string (e.g. "5 stops")
+- stops: string (e.g. "1 stop", "3 stops", "5 stops")
 
-Longfield to London Victoria via Swanley, Bromley South, Herne Hill typically takes ~51 mins.
-London Victoria to Longfield via Herne Hill, Bromley South, Swanley typically takes ~51 mins.
-Key intermediate stops: Fawkham (outbound only before Longfield), Swanley, St Mary Cray, Bromley South, Herne Hill.
-Generate realistic times spaced roughly 30 mins apart. If a specific date/time is given, start trains from that time.
-Always include realistic calling points with estimated arrival times.`;
+There are THREE distinct Southeastern service types on this route:
+
+1. EXPRESS (~31 mins):
+   - Longfield → Swanley → London Victoria
+   - Only 1 intermediate stop at Swanley, then direct to Victoria
+   - Runs roughly every 60 mins, more frequent in peak hours
+
+2. SEMI-FAST (~42 mins):
+   - Longfield → Farningham Road → Swanley → Bromley South → London Victoria
+   - Calls at Farningham Road, Swanley and Bromley South only
+   - Runs roughly every 60 mins
+
+3. STOPPING (~51 mins):
+   - Longfield → Farningham Road → Swanley → St Mary Cray → Bromley South → Herne Hill → London Victoria
+   - Calls at all intermediate stations
+   - Runs roughly every 60 mins
+
+Rotate through all three service types realistically across the timetable.
+For the reverse direction (Victoria → Longfield), reverse the calling points accordingly.
+Always include accurate calling points with estimated arrival times for every service.
+Generate 4 trains starting from the requested time.`;
 
 const HS1_SYSTEM_PROMPT = `You are a UK train timetable assistant for Southeastern High Speed trains.
 When asked for train times, respond ONLY with a JSON array (no markdown, no explanation) of train objects.
