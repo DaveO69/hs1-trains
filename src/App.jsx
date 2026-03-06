@@ -449,6 +449,32 @@ function HS1TabPanel({ direction }) {
   );
 }
 
+function EbbsStPPanel() {
+  return (
+    <div>
+      {/* Outbound */}
+      <div style={{ marginBottom: "28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+          <div style={{ flex: 1, height: "1px", background: "rgba(201,160,100,0.15)" }} />
+          <span style={{ fontSize: "0.68rem", color: "rgba(201,160,100,0.5)", letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Outbound</span>
+          <div style={{ flex: 1, height: "1px", background: "rgba(201,160,100,0.15)" }} />
+        </div>
+        <HS1TabPanel direction="outbound" />
+      </div>
+
+      {/* Divider */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+        <div style={{ flex: 1, height: "1px", background: "rgba(100,140,201,0.15)" }} />
+        <span style={{ fontSize: "0.68rem", color: "rgba(100,140,201,0.5)", letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Inbound</span>
+        <div style={{ flex: 1, height: "1px", background: "rgba(100,140,201,0.15)" }} />
+      </div>
+
+      {/* Inbound */}
+      <HS1TabPanel direction="inbound" />
+    </div>
+  );
+}
+
 function UKSearchPanel({ onStationsChange }) {
   const [fromStation, setFromStation] = useState("");
   const [toStation, setToStation] = useState("");
@@ -636,8 +662,7 @@ export default function App() {
   const [ukSearchStations, setUkSearchStations] = useState({ from: "", to: "" });
 
   const tabs = [
-    { id: "outbound", short: "Outbound" },
-    { id: "inbound", short: "Inbound" },
+    { id: "ebbsstp", short: "Ebbs/StP" },
     { id: "search", short: "🔍 Search" },
     { id: "weather", short: "🌤 Weather" },
     { id: "traffic", short: "🚦 Traffic" },
@@ -677,8 +702,7 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: "480px", margin: "0 auto", padding: "24px 16px 40px" }}>
-        {activeTab === "outbound" && <HS1TabPanel key="outbound" direction="outbound" />}
-        {activeTab === "inbound" && <HS1TabPanel key="inbound" direction="inbound" />}
+        {activeTab === "ebbsstp" && <EbbsStPPanel key="ebbsstp" />}
         {activeTab === "search" && <UKSearchPanel onStationsChange={(from, to) => setUkSearchStations({ from, to })} />}
         {activeTab === "weather" && <WeatherPanel ukSearchStations={ukSearchStations} />}
         {activeTab === "traffic" && <TrafficPanel key="traffic" />}
